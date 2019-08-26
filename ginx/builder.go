@@ -35,7 +35,7 @@ func (cc *builder) indexentry() {
 			for _, m := range ms {
 				mentry, ok := cc.indexes[m]
 				if !ok {
-					mentry := make(map[string]*Entry)
+					mentry = make(map[string]*Entry)
 					cc.indexes[m] = mentry
 				}
 				mentry[entry.Source] = entry

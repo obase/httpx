@@ -1,7 +1,10 @@
 package ginx
 
 import (
+	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/obase/httpx/cache"
+	"net/http"
 	"testing"
 )
 
@@ -12,7 +15,7 @@ func TestNew(t *testing.T) {
 			Type: cache.MEMORY,
 		},
 		HttpPlugin: map[string]string{
-			"VerifyToken": "a,b,c,d",
+			"demo": "a,b,c,d",
 		},
 		HttpEntry: []*Entry{
 			&Entry{
@@ -25,4 +28,15 @@ func TestNew(t *testing.T) {
 		},
 	}
 
+	s := New()
+	s.Plugin("demo", func(args []string) gin.HandlerFunc {
+		return func(context *gin.Context) {
+			fmt.Println(args)
+			flag := context.Query("flag")
+			if flag == "abort" {
+				context.AbortWithStatus(http.StatusOK)
+			}
+		}
+	})
+	s.Run(config, ":8080")
 }
