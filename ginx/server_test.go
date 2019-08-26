@@ -3,13 +3,16 @@ package ginx
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/obase/center"
 	"github.com/obase/httpx/cache"
 	"net/http"
 	"testing"
 )
 
 func TestNew(t *testing.T) {
-
+	center.Setup(&center.Config{
+		Address: "10.11.165.44:18500",
+	})
 	config := &Config{
 		HttpCache: &cache.Config{
 			Type: cache.MEMORY,
