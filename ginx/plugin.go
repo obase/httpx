@@ -45,7 +45,7 @@ func ParsePluginExpress(express string, defargs map[string]string) (name string,
 }
 
 // 从前往后遍历, 确保插件是有序执行的
-func EvaluePluginExpress(plugins []Plugin, defargs map[string]string, express string) (gin.HandlerFunc, error) {
+func EvaluePluginExpress(plugins []*Plugin, defargs map[string]string, express string) (gin.HandlerFunc, error) {
 	name, args, err := ParsePluginExpress(express, defargs)
 	if err != nil {
 		return nil, err

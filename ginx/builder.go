@@ -3,7 +3,10 @@ package ginx
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/obase/ginx/httpcache"
+	"github.com/obase/httpx"
+	"github.com/pkg/errors"
 	"net/http"
+	"net/http/httputil"
 )
 
 type builder struct {
@@ -55,7 +58,7 @@ func (cc *builder) dlinkentry(method string, path string) *Entry {
 }
 
 // 递归处理
-func (cc *builder) building(prefix string, route gin.IRouter, node *RouteNode, plugins []*Plugin, cache httpcache.Cache) {
+func (cc *builder) buildRoute(route gin.IRouter, plugins []*Plugin, cache httpcache.Cache, prefix string, node *RouteNode) error {
 
 	if node.path != "" {
 		prefix += node.path
@@ -68,7 +71,26 @@ func (cc *builder) building(prefix string, route gin.IRouter, node *RouteNode, p
 			entry := cc.dlinkentry(method, path)
 			if entry != nil {
 				// 需要执行特殊设置
-
+				if entry.Service != "" || entry.Target != "" {
+					return errors.New("conflict http entry: " + method + " " + path)
+				}
+				var handlers []gin.HandlerFunc
+				// 处理plugin
+				for _, express := range (*entry).Plugin {
+					if handler, err := EvaluePluginExpress(plugins, cc.Config.HttpPlugin, express); err != nil {
+						return err
+					} else {
+						handlers = append(handlers, handler)
+					}
+				}
+				// 处理cache
+				if entry.Cache > 0 {
+					handlers = append(handlers, cache.Cache(entry.Cache, c))
+				} else {
+					handlers = append(handlers, c)
+				}
+				// 添加路由
+				route.Handle(method, p, handlers...)
 			} else {
 				// 没有plugin,cache等特殊设置
 				route.Handle(method, p, c)
@@ -87,21 +109,57 @@ func (cc *builder) building(prefix string, route gin.IRouter, node *RouteNode, p
 
 	// 递归子树
 	for _, cnode := range node.child {
-		cc.building(prefix, route, cnode, plugins, cache)
+		err := cc.buildRoute(route, plugins, cache, prefix, cnode)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // 删除掉后只剩下反射代理的入口
-func (cc *builder) proxying(engine *gin.Engine) {
-
-}
-
-//  最后检测入口是否清零,否则必有哪个地方配置问题
-func (cc *builder) checking() error {
+func (cc *builder) buildProxy(route gin.IRouter, plugins []*Plugin, cache httpcache.Cache) error {
+	for method, entries := range cc.indexes {
+		for path, entry := range entries {
+			if entry.Service == "" || entry.Target == "" {
+				return errors.New("invalid proxy entry: " + method + " " + path)
+			}
+			var handlers []gin.HandlerFunc
+			// 处理plugin
+			for _, express := range (*entry).Plugin {
+				if handler, err := EvaluePluginExpress(plugins, cc.Config.HttpPlugin, express); err != nil {
+					return err
+				} else {
+					handlers = append(handlers, handler)
+				}
+			}
+			// 处理cache
+			c := proxyHandlerFunc(entry.Https, entry.Service, entry.Target)
+			if entry.Cache > 0 {
+				handlers = append(handlers, cache.Cache(entry.Cache, c))
+			} else {
+				handlers = append(handlers, c)
+			}
+			// 添加路由
+			route.Handle(method, path, handlers...)
+		}
+	}
 	return nil
 }
 
 func (cc *builder) dispose() {
 	cc.Config = nil
 	cc.indexes = nil
+}
+
+func proxyHandlerFunc(https bool, serviceName string, uri string) gin.HandlerFunc {
+	var proxy *httputil.ReverseProxy
+	if https {
+		proxy = httpx.ProxyHandlerTLS(serviceName, uri)
+	} else {
+		proxy = httpx.ProxyHandler(serviceName, uri)
+	}
+	return func(context *gin.Context) {
+		proxy.ServeHTTP(context.Writer, context.Request)
+	}
 }

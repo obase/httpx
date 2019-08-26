@@ -153,9 +153,8 @@ func (s Server) Build(config *Config) (http.Handler, httpcache.Cache, error) {
 
 	engine := gin.New()
 	cache := httpcache.New(config.HttpCache)
-	bd.building("", engine, s.RouteNode, s.Plugins, cache)
-	bd.proxying(engine)
-	err := bd.checking()
+	bd.buildRoute(engine, s.Plugins, cache, "", s.RouteNode)
+	err := bd.buildProxy(engine, s.Plugins, cache)
 	if err != nil {
 		cache.Close()
 		return nil, nil, err
