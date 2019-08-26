@@ -2,7 +2,7 @@ package ginx
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/obase/ginx/httpcache"
+	"github.com/obase/httpx/cache"
 	"net/http"
 	"strings"
 )
@@ -147,12 +147,12 @@ func (s Server) Plugin(name string, f func(args []string) gin.HandlerFunc) {
 }
 
 // 整合cache,plugin生成gin的Engine, 由外部负责关闭cache
-func (s Server) Build(config *Config) (http.Handler, httpcache.Cache, error) {
+func (s Server) Build(config *Config) (http.Handler, cache.Cache, error) {
 	bd := newEngineBuilder(config)
 	defer bd.dispose()
 
 	engine := gin.New()
-	cache := httpcache.New(config.HttpCache)
+	cache := cache.New(config.HttpCache)
 	bd.buildRoute(engine, s.Plugins, cache, "", s.RouteNode)
 	err := bd.buildProxy(engine, s.Plugins, cache)
 	if err != nil {
