@@ -15,7 +15,7 @@ func TestNew(t *testing.T) {
 	})
 	entry := []Entry{
 		Entry{
-			Source:  "/now",
+			Source:  "/g/now",
 			Service: "target",
 			Target:  "/now",
 			Plugin:  []string{"demo"},
@@ -39,5 +39,17 @@ func TestNew(t *testing.T) {
 			}
 		}
 	})
-	s.Run(entry, defargs, cache, ":8080")
+
+	g := s.Group("/g", func(context *gin.Context) {
+		fmt.Println("this is in group...")
+	})
+
+	g.GET("/now", func(context *gin.Context) {
+		fmt.Printf("this is in now ...\n")
+		context.JSON(http.StatusOK, "more good to it...")
+	})
+
+	if err := s.Run(entry, defargs, cache, ":8080"); err != nil {
+		fmt.Println(err)
+	}
 }
