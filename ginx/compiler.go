@@ -50,7 +50,7 @@ func (compiler *EngineCompiler) compileRoute(router gin.IRouter, prefix string, 
 			if entry != nil {
 				// 需要执行特殊设置
 				if entry.Service != "" || entry.Target != "" {
-					return fmt.Errorf("conflict entry: method=%v, source=%v, service=%v, target=%v, handle=%v", method, path, entry.Service, entry.Target, h)
+					return fmt.Errorf("conflict entry: method=%v, source=%v, service=%v, target=%v, handle=%p", method, path, entry.Service, entry.Target, h)
 				}
 				var handlers []gin.HandlerFunc
 				if len(compiler.Plugins) > 0 {
