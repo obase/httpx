@@ -132,7 +132,7 @@ func (r *RouteNode) StaticFS(path string, fs http.FileSystem) IRouter {
 
 type Server struct {
 	*RouteNode
-	Plugins []*Plugin
+	Plugins []Plugin
 }
 
 var _ IRouter = (*Server)(nil)
@@ -143,65 +143,41 @@ func New() *Server {
 
 // note: plugins是有序且不区分大小写
 func (s *Server) Plugin(name string, f func(args []string) gin.HandlerFunc) {
-	s.Plugins = append(s.Plugins, &Plugin{Name: strings.ToLower(name), Func: f})
+	s.Plugins = append(s.Plugins, Plugin{Name: strings.ToLower(name), Func: f})
 }
 
-// 整合cache,plugin生成gin的Engine, 由外部负责关闭cache
-func (s *Server) build(config *Config) (*gin.Engine, cache.Cache, error) {
-	bd := newEngineBuilder(config)
-	defer bd.dispose()
-
-	engine := gin.New()
-	cache := cache.New(config.HttpCache)
-
-	if err := bd.buildRoute(engine, s.Plugins, cache, "", s.RouteNode); err != nil {
-		cache.Close()
-		return nil, nil, err
-	}
-
-	if err := bd.buildProxy(engine, s.Plugins, cache); err != nil {
-		cache.Close()
-		return nil, nil, err
-	}
-	return engine, cache, nil
-}
-
-func (s *Server) Build(config *Config) (http.Handler, cache.Cache, error) {
-	return s.build(config)
-}
-
-func (s *Server) Run(config *Config, addr ...string) (err error) {
-	engine, cache, err := s.build(config)
+func (s *Server) Run(httpEntry []Entry, httpPlugin map[string]string, cache cache.Cache, addr ...string) (err error) {
+	engine, err := s.Compile(httpEntry, httpPlugin, cache)
 	if err != nil {
 		return
 	}
-	defer cache.Close()
 	return engine.Run(addr...)
 }
 
-func (s *Server) RunTLS(config *Config, addr, certFile, keyFile string) (err error) {
-	engine, cache, err := s.build(config)
+func (s *Server) RunTLS(httpEntry []Entry, httpPlugin map[string]string, cache cache.Cache, addr, certFile, keyFile string) (err error) {
+	engine, err := s.Compile(httpEntry, httpPlugin, cache)
 	if err != nil {
 		return
 	}
-	defer cache.Close()
 	return engine.RunTLS(addr, certFile, keyFile)
 }
 
-func (s *Server) RunUnix(config *Config, file string) (err error) {
-	engine, cache, err := s.build(config)
+func (s *Server) RunUnix(httpEntry []Entry, httpPlugin map[string]string, cache cache.Cache, file string) (err error) {
+	engine, err := s.Compile(httpEntry, httpPlugin, cache)
 	if err != nil {
 		return
 	}
-	defer cache.Close()
 	return engine.RunUnix(file)
 }
 
-func (s *Server) RunFd(config *Config, fd int) (err error) {
-	engine, cache, err := s.build(config)
+func (s *Server) RunFd(httpEntry []Entry, httpPlugin map[string]string, cache cache.Cache, fd int) (err error) {
+	engine, err := s.Compile(httpEntry, httpPlugin, cache)
 	if err != nil {
 		return
 	}
-	defer cache.Close()
 	return engine.RunFd(fd)
+}
+
+func (s *Server) Compile(httpEntry []Entry, httpPlugin map[string]string, cache cache.Cache) (*gin.Engine, error) {
+	return NewEngineCompiler(httpEntry, s.Plugins, httpPlugin, cache).Compile(s.RouteNode)
 }
