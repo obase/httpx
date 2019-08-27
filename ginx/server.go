@@ -141,6 +141,11 @@ func New() *Server {
 	return &Server{RouteNode: newRouteNode("", nil)}
 }
 
+func (s *Server) Reset() {
+	s.RouteNode = newRouteNode("", nil)
+	s.Plugins = nil
+}
+
 // note: plugins是有序且不区分大小写
 func (s *Server) Plugin(name string, f func(args []string) gin.HandlerFunc) {
 	s.Plugins = append(s.Plugins, Plugin{Name: strings.ToLower(name), Func: f})
@@ -151,6 +156,7 @@ func (s *Server) Run(httpEntry []Entry, httpPlugin map[string]string, cache cach
 	if err != nil {
 		return
 	}
+	s.Reset()
 	return engine.Run(addr...)
 }
 
@@ -159,6 +165,7 @@ func (s *Server) RunTLS(httpEntry []Entry, httpPlugin map[string]string, cache c
 	if err != nil {
 		return
 	}
+	s.Reset()
 	return engine.RunTLS(addr, certFile, keyFile)
 }
 
@@ -167,6 +174,7 @@ func (s *Server) RunUnix(httpEntry []Entry, httpPlugin map[string]string, cache 
 	if err != nil {
 		return
 	}
+	s.Reset()
 	return engine.RunUnix(file)
 }
 
@@ -175,6 +183,7 @@ func (s *Server) RunFd(httpEntry []Entry, httpPlugin map[string]string, cache ca
 	if err != nil {
 		return
 	}
+	s.Reset()
 	return engine.RunFd(fd)
 }
 
