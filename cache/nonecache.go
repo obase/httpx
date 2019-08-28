@@ -14,11 +14,8 @@ func newNoneCache(c *Config) *noneCache {
 	return &noneCache{}
 }
 
-func (c *noneCache) Cache(seconds int64, f ...gin.HandlerFunc) gin.HandlerFunc {
-	if len(f) == 1 {
-		return f[0]
-	}
-
+func (c *noneCache) Cache(seconds int64, f gin.HandlerFunc) gin.HandlerFunc {
+	return f
 }
 
 func (c *noneCache) Close() {

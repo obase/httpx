@@ -19,7 +19,7 @@ const (
 )
 
 type Cache interface {
-	Cache(seconds int64, h ...gin.HandlerFunc) gin.HandlerFunc
+	Cache(seconds int64, h gin.HandlerFunc) gin.HandlerFunc
 	Close()
 }
 

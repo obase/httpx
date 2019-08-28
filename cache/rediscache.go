@@ -24,7 +24,7 @@ func (c *redisCache) lazyinit() {
 	c.Redis = redis.Get(c.Config.Config.Key)
 }
 
-func (c *redisCache) Cache(seconds int64, f ...gin.HandlerFunc) gin.HandlerFunc {
+func (c *redisCache) Cache(seconds int64, f gin.HandlerFunc) gin.HandlerFunc {
 
 	if seconds <= 0 {
 		return f

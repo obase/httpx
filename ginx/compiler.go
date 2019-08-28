@@ -63,9 +63,15 @@ func (compiler *EngineCompiler) compileRoute(router gin.IRouter, prefix string, 
 						}
 					}
 				}
-				// 处理cache
+				// 处理cache. 只有最后一个h才会缓存
 				if compiler.Cache != nil && entry.Cache > 0 {
-					handlers = append(handlers, compiler.Cache.Cache(entry.Cache, h))
+					last := len(h) - 1
+					if last == 0 {
+						handlers = append(handlers, compiler.Cache.Cache(entry.Cache, h[0]))
+					} else {
+						handlers = append(handlers, h[0:last]...)
+						handlers = append(handlers, h[last])
+					}
 				} else {
 					handlers = append(handlers, h...)
 				}
@@ -73,7 +79,7 @@ func (compiler *EngineCompiler) compileRoute(router gin.IRouter, prefix string, 
 				router.Handle(method, p, handlers...)
 			} else {
 				// 没有plugin,cache等特殊设置
-				router.Handle(method, p, h)
+				router.Handle(method, p, h...)
 			}
 		}
 	}
