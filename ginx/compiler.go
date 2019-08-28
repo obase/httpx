@@ -25,6 +25,7 @@ func NewEngineCompiler(httpEntry []Entry, plugins []Plugin, defargs map[string]s
 }
 
 func (c *EngineCompiler) Compile(root *RouteNode) (*gin.Engine, error) {
+	gin.SetMode(gin.ReleaseMode) //所有都在release模式下运行
 	ge := gin.New()
 
 	if err := c.compileRoute(ge, "", root); err != nil {
