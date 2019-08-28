@@ -7,10 +7,10 @@ import (
 
 type Config struct {
 	redis.Config
-	Type          Type `json:"type" bson:"type" yaml:"type"`
-	MaxMemorySize int  `json:"maxMemorySize" bson:"maxMemorySize" yaml:"maxMemorySize"`
-	MinStatusCode int  `json:"minStatusCode" bson:"minStatusCode" yaml:"minStatusCode"`
-	MaxStatusCode int  `json:"maxStatusCode" bson:"maxStatusCode" yaml:"maxStatusCode"`
+	Type          string `json:"type" bson:"type" yaml:"type"`
+	MaxMemorySize int    `json:"maxMemorySize" bson:"maxMemorySize" yaml:"maxMemorySize"`
+	MinStatusCode int    `json:"minStatusCode" bson:"minStatusCode" yaml:"minStatusCode"`
+	MaxStatusCode int    `json:"maxStatusCode" bson:"maxStatusCode" yaml:"maxStatusCode"`
 }
 
 func mergeConfig(config *Config) *Config {
