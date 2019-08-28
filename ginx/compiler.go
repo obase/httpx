@@ -66,12 +66,10 @@ func (compiler *EngineCompiler) compileRoute(router gin.IRouter, prefix string, 
 				// 处理cache. 只有最后一个h才会缓存
 				if compiler.Cache != nil && entry.Cache > 0 {
 					last := len(h) - 1
-					if last == 0 {
-						handlers = append(handlers, compiler.Cache.Cache(entry.Cache, h[0]))
-					} else {
+					if last > 0 {
 						handlers = append(handlers, h[0:last]...)
-						handlers = append(handlers, h[last])
 					}
+					handlers = append(handlers, compiler.Cache.Cache(entry.Cache, h[last]))
 				} else {
 					handlers = append(handlers, h...)
 				}
