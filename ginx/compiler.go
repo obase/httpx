@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/obase/httpx"
 	"github.com/obase/httpx/cache"
+	"net/http"
 	"net/http/httputil"
 )
 
@@ -150,9 +151,11 @@ func _proxy(https bool, serviceName string, uri string) gin.HandlerFunc {
 func _index(httpEntry []Entry) map[string]map[string]*Entry {
 	indexes := make(map[string]map[string]*Entry)
 	for _, entry := range httpEntry {
-		methods := entry.Method
-		if len(methods) == 0 {
-			methods = DefaultMethods
+		var methods []string
+		if entry.Method == "" {
+			methods = []string{http.MethodPost} // 默认只有POST
+		} else {
+			methods = toStringSlice(entry.Method)
 		}
 		for _, method := range methods {
 			entrymap, ok := indexes[method]
