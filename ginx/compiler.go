@@ -7,6 +7,7 @@ import (
 	"github.com/obase/httpx/cache"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 )
 
 type EngineCompiler struct {
@@ -155,7 +156,7 @@ func _index(httpEntry []Entry) map[string]map[string]*Entry {
 		if entry.Method == "" {
 			methods = []string{http.MethodPost} // 默认只有POST
 		} else {
-			methods = toStringSlice(entry.Method)
+			methods = strings.Split(strings.ToUpper(entry.Method), ",") // 避免大小写混杂的问题
 		}
 		for _, method := range methods {
 			entrymap, ok := indexes[method]

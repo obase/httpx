@@ -5,13 +5,14 @@ import (
 	"crypto/md5"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 )
 
 func New(config *Config) Cache {
 
 	config = mergeConfig(config)
 
-	switch config.Type {
+	switch strings.ToLower(config.Type) {
 	case NONE:
 		return newNoneCache(config)
 	case REDIS:

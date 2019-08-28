@@ -8,12 +8,10 @@ import (
 	"sync"
 )
 
-type Type string
-
 const (
-	NONE   Type = ""
-	REDIS  Type = "redis"
-	MEMORY Type = "memory"
+	NONE   string = ""
+	REDIS  string = "redis"
+	MEMORY string = "memory"
 
 	BufferBlockSize = 10240 // 8k
 )
