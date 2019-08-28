@@ -42,8 +42,9 @@ func (c *EngineCompiler) Compile(root *RouteNode) (*gin.Engine, error) {
 func (compiler *EngineCompiler) compileRoute(router gin.IRouter, prefix string, node *RouteNode) error {
 	if node.path != "" {
 		prefix += node.path
-		router = router.Group(node.path, node.use...)
+		router = router.Group(node.path)
 	}
+	router.Use(node.use...)
 	for method, routes := range node.handle {
 		for p, h := range routes {
 			path := joinPath(prefix, p)
