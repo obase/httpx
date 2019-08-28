@@ -67,7 +67,7 @@ func (compiler *EngineCompiler) compileRoute(router gin.IRouter, prefix string, 
 				if compiler.Cache != nil && entry.Cache > 0 {
 					handlers = append(handlers, compiler.Cache.Cache(entry.Cache, h))
 				} else {
-					handlers = append(handlers, h)
+					handlers = append(handlers, h...)
 				}
 				// 添加路由
 				router.Handle(method, p, handlers...)

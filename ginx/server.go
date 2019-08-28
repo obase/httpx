@@ -19,15 +19,15 @@ type IRouter interface {
 
 	Use(fs ...gin.HandlerFunc) IRouter
 
-	Handle(method string, path string, f gin.HandlerFunc) IRouter
-	Any(path string, f gin.HandlerFunc) IRouter
-	GET(path string, f gin.HandlerFunc) IRouter
-	POST(path string, f gin.HandlerFunc) IRouter
-	DELETE(path string, f gin.HandlerFunc) IRouter
-	PATCH(path string, f gin.HandlerFunc) IRouter
-	PUT(path string, f gin.HandlerFunc) IRouter
-	OPTIONS(path string, f gin.HandlerFunc) IRouter
-	HEAD(path string, f gin.HandlerFunc) IRouter
+	Handle(method string, path string, f ...gin.HandlerFunc) IRouter
+	Any(path string, f ...gin.HandlerFunc) IRouter
+	GET(path string, f ...gin.HandlerFunc) IRouter
+	POST(path string, f ...gin.HandlerFunc) IRouter
+	DELETE(path string, f ...gin.HandlerFunc) IRouter
+	PATCH(path string, f ...gin.HandlerFunc) IRouter
+	PUT(path string, f ...gin.HandlerFunc) IRouter
+	OPTIONS(path string, f ...gin.HandlerFunc) IRouter
+	HEAD(path string, f ...gin.HandlerFunc) IRouter
 
 	StaticFile(path string, file string) IRouter
 	Static(path string, file string) IRouter
@@ -37,7 +37,7 @@ type IRouter interface {
 type RouteNode struct {
 	path       string
 	use        gin.HandlersChain
-	handle     map[string]map[string]gin.HandlerFunc
+	handle     map[string]map[string]gin.HandlersChain
 	staticFile map[string]string
 	static     map[string]string
 	staticFS   map[string]http.FileSystem
@@ -50,7 +50,7 @@ func newRouteNode(path string, use gin.HandlersChain) *RouteNode {
 	return &RouteNode{
 		path:       path,
 		use:        use,
-		handle:     make(map[string]map[string]gin.HandlerFunc),
+		handle:     make(map[string]map[string]gin.HandlersChain),
 		staticFile: make(map[string]string),
 		static:     make(map[string]string),
 		staticFS:   make(map[string]http.FileSystem),
@@ -69,51 +69,51 @@ func (r *RouteNode) Use(fs ...gin.HandlerFunc) IRouter {
 	return r
 }
 
-func (r *RouteNode) Handle(method string, path string, f gin.HandlerFunc) IRouter {
+func (r *RouteNode) Handle(method string, path string, f ...gin.HandlerFunc) IRouter {
 	mhandle, ok := r.handle[method]
 	if !ok {
-		mhandle = make(map[string]gin.HandlerFunc)
+		mhandle = make(map[string]gin.HandlersChain)
 		r.handle[method] = mhandle
 	}
 	mhandle[path] = f
 	return r
 }
-func (r *RouteNode) Any(path string, f gin.HandlerFunc) IRouter {
-	r.Handle(http.MethodGet, path, f)
-	r.Handle(http.MethodPost, path, f)
-	r.Handle(http.MethodDelete, path, f)
-	r.Handle(http.MethodPatch, path, f)
-	r.Handle(http.MethodPut, path, f)
-	r.Handle(http.MethodOptions, path, f)
-	r.Handle(http.MethodHead, path, f)
+func (r *RouteNode) Any(path string, f ...gin.HandlerFunc) IRouter {
+	r.Handle(http.MethodGet, path, f...)
+	r.Handle(http.MethodPost, path, f...)
+	r.Handle(http.MethodDelete, path, f...)
+	r.Handle(http.MethodPatch, path, f...)
+	r.Handle(http.MethodPut, path, f...)
+	r.Handle(http.MethodOptions, path, f...)
+	r.Handle(http.MethodHead, path, f...)
 	return r
 }
-func (r *RouteNode) GET(path string, f gin.HandlerFunc) IRouter {
-	r.Handle(http.MethodGet, path, f)
+func (r *RouteNode) GET(path string, f ...gin.HandlerFunc) IRouter {
+	r.Handle(http.MethodGet, path, f...)
 	return r
 }
-func (r *RouteNode) POST(path string, f gin.HandlerFunc) IRouter {
-	r.Handle(http.MethodPost, path, f)
+func (r *RouteNode) POST(path string, f ...gin.HandlerFunc) IRouter {
+	r.Handle(http.MethodPost, path, f...)
 	return r
 }
-func (r *RouteNode) DELETE(path string, f gin.HandlerFunc) IRouter {
-	r.Handle(http.MethodDelete, path, f)
+func (r *RouteNode) DELETE(path string, f ...gin.HandlerFunc) IRouter {
+	r.Handle(http.MethodDelete, path, f...)
 	return r
 }
-func (r *RouteNode) PATCH(path string, f gin.HandlerFunc) IRouter {
-	r.Handle(http.MethodPatch, path, f)
+func (r *RouteNode) PATCH(path string, f ...gin.HandlerFunc) IRouter {
+	r.Handle(http.MethodPatch, path, f...)
 	return r
 }
-func (r *RouteNode) PUT(path string, f gin.HandlerFunc) IRouter {
-	r.Handle(http.MethodPut, path, f)
+func (r *RouteNode) PUT(path string, f ...gin.HandlerFunc) IRouter {
+	r.Handle(http.MethodPut, path, f...)
 	return r
 }
-func (r *RouteNode) OPTIONS(path string, f gin.HandlerFunc) IRouter {
-	r.Handle(http.MethodOptions, path, f)
+func (r *RouteNode) OPTIONS(path string, f ...gin.HandlerFunc) IRouter {
+	r.Handle(http.MethodOptions, path, f...)
 	return r
 }
-func (r *RouteNode) HEAD(path string, f gin.HandlerFunc) IRouter {
-	r.Handle(http.MethodHead, path, f)
+func (r *RouteNode) HEAD(path string, f ...gin.HandlerFunc) IRouter {
+	r.Handle(http.MethodHead, path, f...)
 	return r
 }
 
