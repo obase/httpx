@@ -1,6 +1,0 @@
-struct Response {
-    Status int16
-    Hname []string
-    Hvals [][]string
-    Rdata []byte
-}
