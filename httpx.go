@@ -183,6 +183,97 @@ func PostURL(url string, header map[string]string, reqobj interface{}, rspobj in
 	return
 }
 
+func Get(serviceName string, uri string, header map[string]string, params map[string]string, rspobj interface{}) (status int, err error) {
+	if len(params) > 0 {
+		buf := new(bytes.Buffer)
+		buf.WriteString(uri)
+		init := true
+		for k, v := range params {
+			if init {
+				init = false
+				buf.WriteRune('?')
+			} else {
+				buf.WriteRune('&')
+			}
+			buf.WriteString(k)
+			buf.WriteRune('=')
+			buf.WriteString(url.QueryEscape(v))
+		}
+		uri = buf.String()
+	}
+	status, content, err := Request(http.MethodGet, false, serviceName, uri, header, nil)
+	if err != nil {
+		return
+	}
+	if status < 200 || status > 299 {
+		err = errors.New(content)
+	} else {
+		err = json.Unmarshal([]byte(content), &rspobj)
+	}
+	return
+}
+
+func GetTLS(serviceName string, uri string, header map[string]string, params map[string]string, rspobj interface{}) (status int, err error) {
+	if len(params) > 0 {
+		buf := new(bytes.Buffer)
+		buf.WriteString(uri)
+		init := true
+		for k, v := range params {
+			if init {
+				init = false
+				buf.WriteRune('?')
+			} else {
+				buf.WriteRune('&')
+			}
+			buf.WriteString(k)
+			buf.WriteRune('=')
+			buf.WriteString(url.QueryEscape(v))
+		}
+		uri = buf.String()
+	}
+	status, content, err := Request(http.MethodGet, true, serviceName, uri, header, nil)
+	if err != nil {
+		return
+	}
+	if status < 200 || status > 299 {
+		err = errors.New(content)
+	} else {
+		err = json.Unmarshal([]byte(content), &rspobj)
+	}
+	return
+}
+
+func GetURL(gurl string, header map[string]string, params map[string]string, rspobj interface{}) (status int, err error) {
+	if len(params) > 0 {
+		buf := new(bytes.Buffer)
+		buf.WriteString(gurl)
+		init := true
+		for k, v := range params {
+			if init {
+				init = false
+				buf.WriteRune('?')
+			} else {
+				buf.WriteRune('&')
+			}
+			buf.WriteString(k)
+			buf.WriteRune('=')
+			buf.WriteString(url.QueryEscape(v))
+		}
+		gurl = buf.String()
+	}
+
+	status, content, err := RequestURL(http.MethodGet, gurl, header, nil)
+	if err != nil {
+		return
+	}
+	if status < 200 || status > 299 {
+		err = errors.New(content)
+	} else {
+		err = json.Unmarshal([]byte(content), &rspobj)
+	}
+	return
+}
+
 func Proxy(serviceName string, uri string, writer http.ResponseWriter, request *http.Request) (err error) {
 	service, err := center.Robin(serviceName)
 	if service != nil && err == nil {
