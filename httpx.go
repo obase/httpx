@@ -133,11 +133,16 @@ func RequestURL(method string, url string, header map[string]string, body io.Rea
 }
 
 func Post(serviceName string, uri string, header map[string]string, reqobj interface{}, rspobj interface{}) (status int, err error) {
-	data, err := json.Marshal(reqobj)
-	if err != nil {
-		return
+	var body io.Reader
+	if reqobj != nil {
+		var data []byte
+		data, err = json.Marshal(reqobj)
+		if err != nil {
+			return
+		}
+		body = bytes.NewReader(data)
 	}
-	status, content, err := Request(http.MethodPost, false, serviceName, uri, header, bytes.NewBuffer(data))
+	status, content, err := Request(http.MethodPost, false, serviceName, uri, header, body)
 	if err != nil {
 		return
 	}
@@ -150,11 +155,16 @@ func Post(serviceName string, uri string, header map[string]string, reqobj inter
 }
 
 func PostTLS(serviceName string, uri string, header map[string]string, reqobj interface{}, rspobj interface{}) (status int, err error) {
-	data, err := json.Marshal(reqobj)
-	if err != nil {
-		return
+	var body io.Reader
+	if reqobj != nil {
+		var data []byte
+		data, err = json.Marshal(reqobj)
+		if err != nil {
+			return
+		}
+		body = bytes.NewReader(data)
 	}
-	status, content, err := Request(http.MethodPost, true, serviceName, uri, header, bytes.NewBuffer(data))
+	status, content, err := Request(http.MethodPost, true, serviceName, uri, header, body)
 	if err != nil {
 		return
 	}
@@ -167,11 +177,16 @@ func PostTLS(serviceName string, uri string, header map[string]string, reqobj in
 }
 
 func PostURL(url string, header map[string]string, reqobj interface{}, rspobj interface{}) (status int, err error) {
-	data, err := json.Marshal(reqobj)
-	if err != nil {
-		return
+	var body io.Reader
+	if reqobj != nil {
+		var data []byte
+		data, err = json.Marshal(reqobj)
+		if err != nil {
+			return
+		}
+		body = bytes.NewReader(data)
 	}
-	status, content, err := RequestURL(http.MethodPost, url, header, bytes.NewBuffer(data))
+	status, content, err := RequestURL(http.MethodPost, url, header, body)
 	if err != nil {
 		return
 	}
@@ -183,14 +198,36 @@ func PostURL(url string, header map[string]string, reqobj interface{}, rspobj in
 	return
 }
 
-func Get(serviceName string, uri string, header map[string]string, params map[string]string, rspobj interface{}) (status int, err error) {
+func Get(serviceName string, uri string, header map[string]string, reqobj interface{}, rspobj interface{}) (status int, err error) {
+	var body io.Reader
+	if reqobj != nil {
+		var data []byte
+		data, err = json.Marshal(reqobj)
+		if err != nil {
+			return
+		}
+		body = bytes.NewReader(data)
+	}
+
+	status, content, err := Request(http.MethodGet, false, serviceName, uri, header, body)
+	if err != nil {
+		return
+	}
+	if status < 200 || status > 299 {
+		err = errors.New(content)
+	} else {
+		err = json.Unmarshal([]byte(content), &rspobj)
+	}
+	return
+}
+
+func Get2(serviceName string, uri string, header map[string]string, params map[string]string, reqobj interface{}, rspobj interface{}) (status int, err error) {
 	if len(params) > 0 {
 		buf := new(bytes.Buffer)
 		buf.WriteString(uri)
-		init := true
+		init := false
 		for k, v := range params {
 			if init {
-				init = false
 				buf.WriteRune('?')
 			} else {
 				buf.WriteRune('&')
@@ -201,7 +238,18 @@ func Get(serviceName string, uri string, header map[string]string, params map[st
 		}
 		uri = buf.String()
 	}
-	status, content, err := Request(http.MethodGet, false, serviceName, uri, header, nil)
+
+	var body io.Reader
+	if reqobj != nil {
+		var data []byte
+		data, err = json.Marshal(reqobj)
+		if err != nil {
+			return
+		}
+		body = bytes.NewReader(data)
+	}
+
+	status, content, err := Request(http.MethodGet, false, serviceName, uri, header, body)
 	if err != nil {
 		return
 	}
@@ -213,14 +261,36 @@ func Get(serviceName string, uri string, header map[string]string, params map[st
 	return
 }
 
-func GetTLS(serviceName string, uri string, header map[string]string, params map[string]string, rspobj interface{}) (status int, err error) {
+func GetTLS(serviceName string, uri string, header map[string]string, reqobj interface{}, rspobj interface{}) (status int, err error) {
+	var body io.Reader
+	if reqobj != nil {
+		var data []byte
+		data, err = json.Marshal(reqobj)
+		if err != nil {
+			return
+		}
+		body = bytes.NewReader(data)
+	}
+
+	status, content, err := Request(http.MethodGet, true, serviceName, uri, header, body)
+	if err != nil {
+		return
+	}
+	if status < 200 || status > 299 {
+		err = errors.New(content)
+	} else {
+		err = json.Unmarshal([]byte(content), &rspobj)
+	}
+	return
+}
+
+func GetTLS2(serviceName string, uri string, header map[string]string, params map[string]string, reqobj interface{}, rspobj interface{}) (status int, err error) {
 	if len(params) > 0 {
 		buf := new(bytes.Buffer)
 		buf.WriteString(uri)
-		init := true
+		init := false
 		for k, v := range params {
 			if init {
-				init = false
 				buf.WriteRune('?')
 			} else {
 				buf.WriteRune('&')
@@ -231,7 +301,18 @@ func GetTLS(serviceName string, uri string, header map[string]string, params map
 		}
 		uri = buf.String()
 	}
-	status, content, err := Request(http.MethodGet, true, serviceName, uri, header, nil)
+
+	var body io.Reader
+	if reqobj != nil {
+		var data []byte
+		data, err = json.Marshal(reqobj)
+		if err != nil {
+			return
+		}
+		body = bytes.NewReader(data)
+	}
+
+	status, content, err := Request(http.MethodGet, true, serviceName, uri, header, body)
 	if err != nil {
 		return
 	}
@@ -243,14 +324,37 @@ func GetTLS(serviceName string, uri string, header map[string]string, params map
 	return
 }
 
-func GetURL(gurl string, header map[string]string, params map[string]string, rspobj interface{}) (status int, err error) {
+func GetURL(gurl string, header map[string]string, reqobj interface{}, rspobj interface{}) (status int, err error) {
+	var body io.Reader
+	if reqobj != nil {
+		var data []byte
+		data, err = json.Marshal(reqobj)
+		if err != nil {
+			return
+		}
+		body = bytes.NewReader(data)
+	}
+
+	status, content, err := RequestURL(http.MethodGet, gurl, header, body)
+	if err != nil {
+		return
+	}
+	if status < 200 || status > 299 {
+		err = errors.New(content)
+	} else {
+		err = json.Unmarshal([]byte(content), &rspobj)
+	}
+	return
+}
+
+func GetURL2(gurl string, header map[string]string, params map[string]string, reqobj interface{}, rspobj interface{}) (status int, err error) {
+
 	if len(params) > 0 {
 		buf := new(bytes.Buffer)
 		buf.WriteString(gurl)
-		init := true
+		init := false
 		for k, v := range params {
 			if init {
-				init = false
 				buf.WriteRune('?')
 			} else {
 				buf.WriteRune('&')
@@ -262,7 +366,17 @@ func GetURL(gurl string, header map[string]string, params map[string]string, rsp
 		gurl = buf.String()
 	}
 
-	status, content, err := RequestURL(http.MethodGet, gurl, header, nil)
+	var body io.Reader
+	if reqobj != nil {
+		var data []byte
+		data, err = json.Marshal(reqobj)
+		if err != nil {
+			return
+		}
+		body = bytes.NewReader(data)
+	}
+
+	status, content, err := RequestURL(http.MethodGet, gurl, header, body)
 	if err != nil {
 		return
 	}
