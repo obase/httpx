@@ -143,7 +143,7 @@ const CKEY = "httpx"
 
 func LoadConfig() *Config {
 	var config *Config
-	if ok := conf.Scan(CKEY, &config); !ok {
+	if ok := conf.Bind(CKEY, &config); !ok {
 		return nil
 	}
 	return config
